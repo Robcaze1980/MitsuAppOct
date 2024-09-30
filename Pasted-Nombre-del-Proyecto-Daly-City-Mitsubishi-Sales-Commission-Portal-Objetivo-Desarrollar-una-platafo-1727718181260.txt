@@ -1,0 +1,205 @@
+Nombre del Proyecto:
+Daly City Mitsubishi Sales Commission Portal
+
+Objetivo:
+Desarrollar una plataforma web integral que facilite la gestión de ventas, el cálculo automático de comisiones, la administración de clientes y vehículos, y la generación de reportes avanzados para el análisis de desempeño de los vendedores en el concesionario Daly City Mitsubishi.
+
+Características Principales
+**1. Autenticación y Gestión de Usuarios
+Inicio de Sesión y Registro:
+Implementación de páginas de Sign In y Sign Up utilizando Supabase Auth para la autenticación segura de usuarios.
+Roles de Usuario:
+Administrador: Gestión completa de la plataforma, incluyendo la administración de usuarios, aprobaciones de bonos y acceso a todos los reportes.
+Gerente de Ventas: Supervisión de las ventas, aprobación de bonos de trade-in y acceso a reportes específicos.
+Vendedor: Acceso para registrar y gestionar sus propias ventas, ver sus comisiones y bonos.
+**2. Gestión de Ventas
+Registro de Ventas:
+Formulario para ingresar detalles de cada venta, incluyendo información del cliente, vehículo vendido, precios de venta, accesorios, garantías, mantenimiento, y trade-in.
+Cálculo Automático de Comisiones:
+Comisión sobre Precio del Vehículo:
+Menos de $10,000: $200.
+$10,000 - $20,000: $300.
+$20,000 - $30,000: $400.
+Más de $30,000: $500.
+Comisión sobre Accesorios:
+$100 por cada $800 en precio de venta de accesorios, siempre que el monto total supere los $800.
+Comisión sobre Garantía Extendida:
+$100 por cada $1,000 de ganancia en la venta de garantías (calculada como warranty_price - warranty_cost).
+Comisión sobre Paquete de Mantenimiento:
+$100 si el valor del servicio de mantenimiento supera los $800.
+Bonos de Trade-In:
+Ingresados manualmente y requieren la aprobación del gerente de ventas debido a la variabilidad en las negociaciones.
+Comisiones Compartidas:
+Si una venta es compartida entre dos vendedores (shared = true), la comisión se divide equitativamente (50/50).
+**3. Gestión de Clientes y Vehículos
+Clientes:
+CRUD (Crear, Leer, Actualizar, Eliminar) para administrar la información de los clientes, incluyendo datos demográficos y detalles de contacto.
+Vehículos:
+Gestión del inventario de vehículos, incluyendo detalles como marca, modelo, año, número de stock, VIN y estado del vehículo.
+**4. Gestión de Bonos
+Bonuses:
+Registro y seguimiento de diferentes tipos de bonos asociados a cada venta, como comisiones y otros incentivos.
+Aprobaciones:
+Proceso de aprobación de bonos de trade-in por parte de gerentes de ventas para garantizar la integridad y precisión de los bonos asignados.
+**5. Reportes y Análisis Avanzado
+Reportes de Ventas:
+Generación de reportes detallados sobre el desempeño de ventas, permitiendo filtrar por fechas, vendedores, vehículos, etc.
+Reportes de Comisiones:
+Análisis de comisiones generadas por cada vendedor, incluyendo desglose por tipo de comisión.
+Visualización de Datos:
+Integración de gráficos y tablas dinámicas para una mejor comprensión y análisis de los datos de ventas y comisiones.
+**6. Seguridad y Control de Acceso
+Row-Level Security (RLS) en Supabase:
+Políticas de seguridad implementadas para garantizar que los usuarios solo accedan a los datos permitidos según su rol.
+Protección de Datos Sensibles:
+Manejo seguro de información confidencial como números de identificación (TIN/SSN) de clientes.
+**7. Interfaz de Usuario Intuitiva
+Diseño Responsivo:
+Utilización de Tailwind CSS para crear una interfaz adaptable a diferentes dispositivos y tamaños de pantalla.
+Componentes Reutilizables:
+Desarrollo de componentes React reutilizables para mantener la consistencia y eficiencia en el desarrollo de la interfaz.
+Arquitectura Tecnológica
+**1. Frontend:
+Framework: Next.js (App Router) con TypeScript para el desarrollo de interfaces de usuario robustas y escalables.
+
+Estilizado: Tailwind CSS para una rápida y eficiente implementación de estilos responsivos.
+
+Componentes:
+
+Header: Navegación principal con enlaces condicionales según el rol del usuario.
+SalesList y SaleItem: Listado y detalles de cada venta.
+Formularios CRUD: Para la gestión de ventas, clientes y vehículos.
+**2. Backend:
+Base de Datos: Supabase como backend-as-a-service, proporcionando autenticación, almacenamiento de datos y funciones en tiempo real.
+
+Autenticación: Supabase Auth para manejar el inicio de sesión, registro y gestión de sesiones de usuario.
+
+APIs: Interacciones con la base de datos a través de Supabase Client en el frontend.
+
+**3. Seguridad:
+Row-Level Security (RLS): Implementado en Supabase para controlar el acceso a los datos según los roles de los usuarios.
+
+Variables de Entorno: Gestión segura de claves y URLs de Supabase mediante el archivo .env.local.
+
+**4. Despliegue:
+Plataforma Recomendada: Vercel para un despliegue sencillo y optimizado de aplicaciones Next.js.
+
+CI/CD: Integración continua para pruebas automáticas y despliegue de actualizaciones.
+
+Relaciones de las Tablas en Supabase
+**1. Profiles y auth.users:
+Relación Uno a Uno:
+Cada perfil de usuario (profiles.id) está vinculado con un usuario autenticado en Supabase (auth.users.id).
+**2. Sales y otras tablas:
+Sales - Bonuses:
+Relación Uno a Muchos: Cada venta puede tener múltiples bonos asociados.
+Sales - Salespeople:
+Relación Uno a Muchos: Cada venta está asociada con un vendedor específico.
+Sales - Vehicles:
+Relación Uno a Muchos: Cada venta está vinculada a un vehículo vendido.
+Sales - Customers:
+Relación Uno a Muchos: Cada venta está relacionada con un cliente específico.
+**3. Integridad Referencial:
+Foreign Keys: Implementación de claves foráneas para mantener la integridad de las relaciones entre tablas.
+
+On Delete Cascade/Set Null:
+
+Definición de acciones al eliminar registros relacionados para mantener la consistencia de los datos.
+Lógica de Cálculo de Comisiones
+**1. Comisión sobre Precio del Vehículo:
+Fórmulas:
+Menos de $10,000: $200.
+$10,000 - $20,000: $300.
+$20,000 - $30,000: $400.
+Más de $30,000: $500.
+Implementación:
+Cálculo automático al ingresar el precio de venta en la tabla sales.
+Posible uso de triggers en la base de datos para automatizar este cálculo.
+**2. Comisión sobre Accesorios:
+Fórmula:
+$100 por cada $800 en precio de venta de accesorios, siempre que el monto total supere los $800.
+Implementación:
+Cálculo automático y almacenamiento en la columna bonus de la tabla sales.
+**3. Comisión sobre Garantía Extendida:
+Fórmula:
+$100 por cada $1,000 de ganancia en la venta de garantías (warranty_price - warranty_cost).
+Implementación:
+Cálculo de la ganancia y asignación de la comisión correspondiente.
+**4. Comisión sobre Paquete de Mantenimiento:
+Fórmula:
+$100 si el valor del servicio de mantenimiento supera los $800.
+Implementación:
+Verificación del monto y asignación de la comisión en consecuencia.
+**5. Bonos de Trade-In:
+Proceso:
+Ingreso manual del bono de trade-in.
+Requiere aprobación del gerente de ventas.
+Implementación:
+Registro en la tabla bonuses con relación a la venta correspondiente (sale_id).
+**6. Comisiones Compartidas:
+Fórmula:
+Si una venta es compartida entre dos vendedores (shared = true), la comisión se divide en partes iguales (50/50).
+Implementación:
+Verificación del campo shared y cálculo proporcional de comisiones para cada vendedor.
+Uso de vin y stock_number para evitar reclamaciones duplicadas de ventas.
+Pasos para Completar la Configuración de la Webapp
+**1. Implementar CRUD para Ventas, Clientes y Vehículos
+Ventas:
+Crear formularios para agregar, editar y eliminar ventas.
+Asegurar que al ingresar una venta, se calculen y asignen automáticamente las comisiones según las reglas definidas.
+Clientes:
+Formularios para gestionar la información de los clientes.
+Vehículos:
+Formularios para administrar el inventario de vehículos.
+**2. Desarrollar Componentes de Interfaz de Usuario
+Listados Dinámicos:
+Componentes para listar ventas, clientes y vehículos con opciones de filtrado y búsqueda.
+Detalles de Ventas:
+Páginas individuales para visualizar y gestionar detalles específicos de cada venta.
+Aprobación de Bonos:
+Interfaces para que gerentes de ventas puedan revisar y aprobar bonos de trade-in.
+**3. Implementar la Lógica de Cálculo de Comisiones
+Triggers y Funciones en SQL:
+Crear triggers en la base de datos para automatizar el cálculo de comisiones al insertar o actualizar registros en sales.
+Validaciones en el Frontend:
+Asegurar que los formularios validen los datos ingresados y calculen las comisiones correctamente antes de enviar al servidor.
+**4. Configurar Row-Level Security (RLS) en Supabase
+Políticas de Seguridad:
+Definir políticas para controlar el acceso a las tablas según los roles de usuario.
+Pruebas de Acceso:
+Verificar que los usuarios solo puedan acceder y modificar los datos permitidos.
+**5. Desarrollar Reportes y Análisis Avanzado
+Integración de Librerías de Visualización:
+Utilizar herramientas como Chart.js o D3.js para crear gráficos y visualizaciones de datos.
+Generación de Reportes:
+Páginas para generar reportes de ventas y comisiones, con opciones para filtrar y exportar datos en formatos como PDF o CSV.
+**6. Optimizar la Experiencia de Usuario (UX)
+Diseño Responsivo:
+Asegurar que la aplicación funcione correctamente en dispositivos móviles, tabletas y escritorios.
+Interfaz Intuitiva:
+Diseñar una navegación clara y coherente, facilitando a los usuarios encontrar y gestionar la información necesaria.
+**7. Realizar Pruebas y Validaciones
+Pruebas Funcionales:
+Verificar que todas las funcionalidades operen según lo esperado.
+Pruebas de Seguridad:
+Asegurar que las políticas de RLS estén correctamente implementadas y que no existan vulnerabilidades.
+Pruebas de Rendimiento:
+Optimizar consultas y componentes para garantizar una carga rápida y eficiente de la aplicación.
+**8. Despliegue de la Aplicación
+Plataforma de Despliegue:
+Vercel es una opción recomendada para desplegar aplicaciones Next.js.
+Configuración de Variables de Entorno:
+Asegurar que las variables de entorno (.env.local) estén configuradas correctamente en la plataforma de despliegue.
+Monitoreo y Mantenimiento:
+Implementar herramientas de monitoreo para supervisar el rendimiento y detectar posibles errores post-despliegue.
+Conclusión
+Tu proyecto Daly City Mitsubishi Sales Commission Portal está diseñado para ofrecer una solución completa y eficiente para la gestión de ventas y comisiones en el concesionario. Con una estructura de base de datos bien definida en Supabase, lógica de cálculo de comisiones automatizada y una interfaz de usuario intuitiva desarrollada con Next.js y TypeScript, la plataforma está bien encaminada para optimizar el desempeño de los vendedores y facilitar el análisis avanzado de ventas.
+
+Recomendaciones Finales:
+Documentación Continua:
+Mantén una documentación detallada de cada componente y funcionalidad para facilitar el mantenimiento y futuras mejoras.
+Feedback de Usuarios:
+Recoge y analiza el feedback de los usuarios finales para identificar áreas de mejora y ajustar la plataforma según sus necesidades.
+Escalabilidad:
+Diseña la arquitectura pensando en la escalabilidad para soportar un aumento en el número de usuarios y datos sin comprometer el rendimiento.
+Si necesitas asistencia adicional en alguna etapa específica del desarrollo o tienes preguntas más concretas, ¡no dudes en consultarme!
