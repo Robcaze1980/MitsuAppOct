@@ -1,0 +1,53 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String
+  role      String
+  sales     Sale[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Sale {
+  id                 String   @id @default(uuid())
+  customerName       String
+  vehicleId          String
+  totalAmount        Float
+  accessoriesAmount  Float
+  warrantyPrice      Float
+  warrantyCost       Float
+  maintenanceAmount  Float
+  salespersonId      String
+  salesperson        User     @relation(fields: [salespersonId], references: [id])
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+model Customer {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  phone     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Vehicle {
+  id          String   @id @default(uuid())
+  make        String
+  model       String
+  year        Int
+  vin         String   @unique
+  stockNumber String   @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
