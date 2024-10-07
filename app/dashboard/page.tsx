@@ -1,17 +1,18 @@
-import { getServerSession } from 'next-auth/next'
-import { authOptions } from '../api/auth/[...nextauth]/route'
-import Link from 'next/link'
+import { getSession, getUserProfile } from '../../lib/auth';
+import Link from 'next/link';
 
 export default async function Dashboard() {
-  const session = await getServerSession(authOptions)
+  const session = await getSession();
+  const profile = await getUserProfile();
 
   if (!session) {
-    return <div>Please sign in to access the dashboard.</div>
+    return <div>Please sign in to access the dashboard.</div>;
   }
 
   return (
     <div>
       <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
+      <p>Welcome, {profile?.name || session.user.email}</p>
       <nav>
         <ul className="space-y-2">
           <li>
@@ -37,5 +38,5 @@ export default async function Dashboard() {
         </ul>
       </nav>
     </div>
-  )
+  );
 }

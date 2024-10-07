@@ -1,6 +1,6 @@
 import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
-import VehicleForm from '@/components/VehicleForm'
+import VehicleForm from '@/components/forms/VehicleForm'
 
 export default async function Vehicles() {
   const supabase = createServerComponentClient({ cookies })

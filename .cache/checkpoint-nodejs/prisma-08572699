@@ -1,0 +1,30 @@
+{
+  "last_reminder": 0,
+  "cached_at": 1727718347542,
+  "version": "5.20.0",
+  "cli_path": "/home/runner/SalesCommissionPortal-1/node_modules/prisma/build/index.js",
+  "output": {
+    "product": "prisma",
+    "previous_version": "5.20.0",
+    "checkpoint_version": 4,
+    "local_timestamp_without_timezone": "2024-09-30T17:45:47Z",
+    "current_version": "5.20.0",
+    "current_release_date": 1727189406,
+    "client_event_id": "e6b1554a-c8d7-47a0-9e87-3c126bdcb275",
+    "current_download_url": "https://github.com/prisma/prisma",
+    "package": "prisma",
+    "release_tag": "latest",
+    "install_command": "npm install --save-dev prisma",
+    "schema_providers": [
+      "postgresql"
+    ],
+    "schema_preview_features": [],
+    "schema_generators_providers": [
+      "prisma-client-js"
+    ],
+    "current_changelog_url": "https://github.com/prisma/prisma",
+    "outdated": false,
+    "project_website": "https://prisma.io",
+    "alerts": []
+  }
+}
