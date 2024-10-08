@@ -7,8 +7,8 @@ const nextConfig = {
     SECRET_KEY: process.env.SECRET_KEY,
   },
   images: {
-    domains: ['localhost'], // Add 'localhost' to allow local images
+    domains: ['localhost'],
   },
 }
 
-module.exports = nextConfig
+module.exports = nextConfig;

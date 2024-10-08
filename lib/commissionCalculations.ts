@@ -4,7 +4,7 @@ const DEFAULT_NEW_CAR_ACCESSORIES = 998;
 const DEFAULT_USED_CAR_ACCESSORIES = 498;
 const ACCESSORY_COMMISSION_THRESHOLD = 900;
 
-export function calculateCommission(sale: Partial<Sale>): number {
+export function calculateCommission(sale: Partial<Omit<Sale, 'salesperson_id'>> & { salesperson_id?: string | null | undefined }): number {
   let commission = 0;
 
   // Base commission on sale price

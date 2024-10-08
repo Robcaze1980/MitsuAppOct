@@ -8,7 +8,7 @@ export type Customer = {
   gender: string;
   ethnicity: string;
   monthly_income: number;
-  tin_ssn: string;
+  tin_ssn: boolean; // Change this to boolean
 };
 
 export type Vehicle = {
@@ -20,35 +20,45 @@ export type Vehicle = {
   vin: string;
 };
 
-// Mantenemos la definición de Sale aquí y le añadimos las referencias a Customer y Vehicle
-export type Sale = {
+export interface Sale {
   id: string;
   date: string;
   stock_number: string;
-  salesperson_id: string;
+  salesperson_id: string | null;  // Changed to allow null
   sale_price: number;
   accessory_price: number;
   warranty_price: number;
   warranty_cost: number;
   maintenance_price: number;
-  maintenance_cost: number;
   bonus: number;
   trade_in: number;
   shared: boolean;
-  shared_with_email: string | null;
-  type: 'New' | 'Used';
-  customer_id: string;
-  vehicle_id: string;
-  auth_users_id: string;
+  shared_with_salesperson_id: string | null;  // Changed to allow null
+  customer_id: string | null;  // Changed to allow null
+  vehicle_id: string | null;  // Changed to allow null
+  type: 'New' | 'Used';  // Changed to specific string literal type
+  maintenance_cost: number;
+  accessory_cost: number;
+  first_name: string;
+  last_name: string;
+  age: number;
+  gender: string;
+  ethnicity: string;
+  monthly_income: number;
+  tin_ssn: boolean;
+  make: string;
+  model: string;
+  year: number;
+  vin: string;
+}
 
-  // Añadimos las propiedades de Customer y Vehicle para acceder a ellas más fácilmente
+export type SaleWithRelations = Sale & {
   customers?: Customer;
   vehicles?: Vehicle;
 };
 
-export type SalespersonSupabase = {
+export type Salesperson = {
   id: string;
   name: string;
   email: string;
 };
-

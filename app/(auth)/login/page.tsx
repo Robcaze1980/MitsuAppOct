@@ -1,11 +1,9 @@
 'use client';
 
-import React from 'react';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import { Database } from '@/types/supabase';
 
 export default function SignIn() {
   const [email, setEmail] = useState('');
@@ -15,7 +13,7 @@ export default function SignIn() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const router = useRouter();
-  const supabase = createClientComponentClient<Database>();
+  const supabase = createClientComponentClient();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,7 +29,6 @@ export default function SignIn() {
       setError(error.message);
     } else {
       setSuccess('Sign in successful!');
-      // Check user role and redirect accordingly
       const { data: { user } } = await supabase.auth.getUser();
       if (user?.user_metadata.role === 'admin') {
         router.push('/dashboard/admin');
@@ -45,14 +42,8 @@ export default function SignIn() {
 
   return (
     <div className="min-h-screen bg-white relative">
-      {/* Barra superior roja */}
-      <div className="w-full h-12 bg-red-600 flex items-center justify-between px-4 absolute top-0 left-0">
-        {/* Barra superior vacía */}
-      </div>
-
-      {/* Contenedor principal */}
+      <div className="w-full h-12 bg-red-600 flex items-center justify-between px-4 absolute top-0 left-0"></div>
       <div className="flex justify-center items-center h-screen relative">
-        {/* Sección izquierda con la imagen */}
         <div
           className="w-2/3 bg-white flex items-center justify-center p-4"
           style={{
@@ -69,8 +60,6 @@ export default function SignIn() {
             className="object-contain"
           />
         </div>
-
-        {/* Sección derecha con el formulario de inicio de sesión */}
         <div
           className="bg-white flex flex-col items-center justify-center p-10 rounded-lg border border-gray-300"
           style={{
@@ -81,7 +70,6 @@ export default function SignIn() {
             position: 'relative',
           }}
         >
-          {/* Logo de Mitsubishi */}
           <Image
             src="/images/mitsubishi-logo.png"
             alt="Mitsubishi Logo"
@@ -89,9 +77,7 @@ export default function SignIn() {
             height={200}
             className="mb-4"
           />
-
           <h1 className="text-xl mb-8 text-center">Sales Commission Portal</h1>
-
           <div className="w-full max-w-sm">
             <form onSubmit={handleSubmit}>
               {isSignUp && (
@@ -159,4 +145,3 @@ export default function SignIn() {
     </div>
   );
 }
-
