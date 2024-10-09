@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { Pie } from 'react-chartjs-2'
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js'
-import { Sale } from '@/types'
+import { Sale } from '@/types/supabase'  // Updated import
 
 ChartJS.register(ArcElement, Tooltip, Legend)
 
@@ -20,7 +20,7 @@ export default function VehiclePopularityChart({ data }: VehiclePopularityChartP
   useEffect(() => {
     const vehicleCounts: { [key: string]: number } = {}
     data.forEach((sale) => {
-      const vehicleKey = `${sale.make} ${sale.model}`
+      const vehicleKey = `${sale.make ?? 'Unknown'} ${sale.model ?? 'Unknown'}`;
       if (vehicleCounts[vehicleKey]) {
         vehicleCounts[vehicleKey]++
       } else {

@@ -64,9 +64,4 @@ export type Salesperson = {
 };
 
 // Optional: Define Database type if necessary
-export type Database = {
-  customers: Customer[];
-  vehicles: Vehicle[];
-  sales: Sale[];
-  salespeople: Salesperson[];
-};
+// export type { Database } from '@supabase/auth-helpers-nextjs'
