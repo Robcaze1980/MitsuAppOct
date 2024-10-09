@@ -1,20 +1,21 @@
+// app/dashboard/salesperson/page.tsx
 'use client';
 
 import React, { useState, useEffect } from 'react';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import { Sale } from '@/types/supabase'; // Ensure Sale includes all necessary fields
+import { Sale } from '@/types/supabase';
 import SaleForm from '@/components/SaleForm';
 import { calculateCommission } from '@/lib/commissionCalculations';
 import Image from 'next/image';
 import SideNav from '@/components/dashboard/SideNav';
 import TopBar from '@/components/dashboard/TopBar';
-import { FaArrowUp, FaArrowDown } from 'react-icons/fa';
+import { FaCaretUp, FaCaretDown } from 'react-icons/fa';
 
 const supabase = createClientComponentClient();
 
 const formatNumber = (num: number | null | undefined) => {
-  if (num == null) return '0.00';
-  return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  if (num == null) return '0';
+  return Math.round(num).toLocaleString('en-US');
 };
 
 interface StatsData {
@@ -22,6 +23,8 @@ interface StatsData {
   totalCommission: number;
   numberOfSales: number;
   sharedSales: number;
+  newCarSales: number;  // New Property
+  usedCarSales: number; // New Property
 }
 
 interface PercentageChange {
@@ -29,6 +32,8 @@ interface PercentageChange {
   totalCommissionChange: number;
   numberOfSalesChange: number;
   sharedSalesChange: number;
+  newCarSalesChange: number;  // New Property
+  usedCarSalesChange: number; // New Property
 }
 
 export default function SalespersonDashboard() {
@@ -44,6 +49,8 @@ export default function SalespersonDashboard() {
     totalCommission: 0,
     numberOfSales: 0,
     sharedSales: 0,
+    newCarSales: 0,  // Initialize
+    usedCarSales: 0, // Initialize
   });
 
   const [previousStats, setPreviousStats] = useState<StatsData>({
@@ -51,6 +58,8 @@ export default function SalespersonDashboard() {
     totalCommission: 0,
     numberOfSales: 0,
     sharedSales: 0,
+    newCarSales: 0,  // Initialize
+    usedCarSales: 0, // Initialize
   });
 
   const [percentageChange, setPercentageChange] = useState<PercentageChange>({
@@ -58,6 +67,8 @@ export default function SalespersonDashboard() {
     totalCommissionChange: 0,
     numberOfSalesChange: 0,
     sharedSalesChange: 0,
+    newCarSalesChange: 0,  // Initialize
+    usedCarSalesChange: 0, // Initialize
   });
 
   /**
@@ -130,6 +141,14 @@ export default function SalespersonDashboard() {
           currentStatsData.sharedSales,
           previousStatsData.sharedSales
         ),
+        newCarSalesChange: calculatePercentageChange(
+          currentStatsData.newCarSales,
+          previousStatsData.newCarSales
+        ),
+        usedCarSalesChange: calculatePercentageChange(
+          currentStatsData.usedCarSales,
+          previousStatsData.usedCarSales
+        ),
       });
     } catch (error) {
       console.error('Error fetching stats:', error);
@@ -141,7 +160,7 @@ export default function SalespersonDashboard() {
    * Fetches statistics for a specific month and year.
    * @param year - The year for which to fetch stats.
    * @param month - The month (0-based) for which to fetch stats.
-   * @returns StatsData object containing totalSales, totalCommission, numberOfSales, sharedSales.
+   * @returns StatsData object containing totalSales, totalCommission, numberOfSales, sharedSales, newCarSales, usedCarSales.
    */
   const getMonthStats = async (year: number, month: number): Promise<StatsData> => {
     const startDate = new Date(Date.UTC(year, month, 1)).toISOString();
@@ -160,13 +179,15 @@ export default function SalespersonDashboard() {
 
       if (!data || data.length === 0) {
         console.log('No data found for the selected month');
-        return { totalSales: 0, totalCommission: 0, numberOfSales: 0, sharedSales: 0 };
+        return { totalSales: 0, totalCommission: 0, numberOfSales: 0, sharedSales: 0, newCarSales: 0, usedCarSales: 0 };
       }
 
       let totalSales = 0;
       let totalCommission = 0;
       let numberOfSales = 0;
       let sharedSales = 0;
+      let newCarSales = 0;  // Initialize
+      let usedCarSales = 0; // Initialize
 
       for (const sale of data) {
         totalSales += sale.sale_price || 0;
@@ -182,14 +203,21 @@ export default function SalespersonDashboard() {
 
         numberOfSales++;
         if (sale.shared) sharedSales++;
+
+        // Count New and Used Car Sales
+        if (sale.type === 'New') {
+          newCarSales++;
+        } else if (sale.type === 'Used') {
+          usedCarSales++;
+        }
       }
 
-      console.log('Calculated stats:', { totalSales, totalCommission, numberOfSales, sharedSales });
+      console.log('Calculated stats:', { totalSales, totalCommission, numberOfSales, sharedSales, newCarSales, usedCarSales });
 
-      return { totalSales, totalCommission, numberOfSales, sharedSales };
+      return { totalSales, totalCommission, numberOfSales, sharedSales, newCarSales, usedCarSales };
     } catch (error) {
       console.error('Error fetching month stats:', error);
-      return { totalSales: 0, totalCommission: 0, numberOfSales: 0, sharedSales: 0 };
+      return { totalSales: 0, totalCommission: 0, numberOfSales: 0, sharedSales: 0, newCarSales: 0, usedCarSales: 0 };
     }
   };
 
@@ -287,21 +315,41 @@ export default function SalespersonDashboard() {
     try {
       console.log('Attempting to add new sale:', newSale);
 
-      // Check for duplicate VIN
+      // Check for duplicate VIN or stock number
       const { data: existingSale, error: checkError } = await supabase
         .from('sales')
-        .select('id, vin')
-        .eq('vin', newSale.vin)
+        .select('id, vin, stock_number, salesperson_id')
+        .or(`vin.eq.${newSale.vin},stock_number.eq.${newSale.stock_number}`)
         .single();
 
       if (checkError && checkError.code !== 'PGRST116') {
-        // PGRST116 means no rows returned, which is what we want
-        console.error('Error checking for duplicate VIN:', checkError);
+        console.error('Error checking for duplicate sale:', checkError);
         throw new Error('Error checking for duplicate sale. Please try again.');
       }
 
       if (existingSale) {
-        throw new Error(`A sale with VIN ${newSale.vin} already exists. Duplicate sales are not allowed.`);
+        let errorMessage = '';
+        if (existingSale.vin === newSale.vin) {
+          errorMessage = `A sale with VIN ${newSale.vin} already exists.`;
+        } else if (existingSale.stock_number === newSale.stock_number) {
+          errorMessage = `A sale with Stock Number ${newSale.stock_number} already exists.`;
+        }
+
+        // Fetch the salesperson's name
+        const { data: salesperson, error: salespersonError } = await supabase
+          .from('salespeople')
+          .select('name')
+          .eq('id', existingSale.salesperson_id)
+          .single();
+
+        if (salespersonError) {
+          console.error('Error fetching salesperson:', salespersonError);
+        } else if (salesperson) {
+          errorMessage += ` It was recorded by ${salesperson.name}.`;
+        }
+
+        errorMessage += ' Duplicate sales are not allowed.';
+        throw new Error(errorMessage);
       }
 
       const saleData = {
@@ -320,20 +368,13 @@ export default function SalespersonDashboard() {
         saleData.shared_with_salesperson_id = null;
       }
 
-      // Remove any properties that are undefined or empty strings for UUID fields
-      (Object.keys(saleData) as Array<keyof typeof saleData>).forEach(key => {
-        if (saleData[key] === '' && ['salesperson_id', 'customer_id', 'vehicle_id', 'shared_with_salesperson_id'].includes(key)) {
-          (saleData as any)[key] = null;
-        }
-      });
-
       const { data: insertData, error: insertError } = await supabase
         .from('sales')
         .insert([saleData]);
 
       if (insertError) {
         console.error('Error adding sale:', insertError);
-        throw insertError;
+        throw new Error('Error adding sale. Please try again.');
       }
 
       console.log('Sale added successfully:', insertData);
@@ -357,24 +398,36 @@ export default function SalespersonDashboard() {
   const renderStatCard = (
     value: string | number,
     title: string,
-    change: number
+    change: number,
+    isUnitComparison: boolean = false,
+    bgColor: string = 'bg-white'
   ) => {
-    console.log(`Rendering stat card for ${title}:`, value); // Added logging
+    console.log(`Rendering stat card for ${title}:`, value);
     const isIncrease = change >= 0;
+    const changeText = isUnitComparison
+      ? `${Math.abs(Math.round(change))} ${isIncrease ? 'more' : 'less'} unit${Math.abs(Math.round(change)) !== 1 ? 's' : ''}`
+      : `${Math.abs(change).toFixed(2)}%`;
+    const formattedValue = typeof value === 'number' 
+      ? isUnitComparison 
+        ? Math.round(value).toString()
+        : `$${formatNumber(value)}`
+      : value;
     return (
-      <div className="bg-white p-4 rounded-lg shadow-md flex flex-col items-center">
-        <p className="text-2xl font-bold text-gray-900">{value}</p>
-        <h3 className="text-lg font-semibold text-gray-700 mt-2">{title}</h3>
-        <p className="text-sm mt-1 flex items-center">
+      <div className={`p-4 rounded-lg shadow-md flex flex-col ${bgColor}`}>
+        <h3 className="text-lg font-semibold text-gray-700 mb-2">{title}</h3>
+        <p className="text-2xl font-bold text-gray-900">
+          {formattedValue}
+        </p>
+        <div className="text-sm mt-1 flex items-center justify-start w-full">
           {isIncrease ? (
-            <FaArrowUp className="mr-1 text-green-500" />
+            <FaCaretUp className="mr-1 text-green-500" size={28} />
           ) : (
-            <FaArrowDown className="mr-1 text-red-500" />
+            <FaCaretDown className="mr-1 text-red-500" size={28} />
           )}
           <span className="text-gray-500">
-            {Math.abs(change).toFixed(2)}% this month
+            {changeText} {isUnitComparison ? '' : 'this month'}
           </span>
-        </p>
+        </div>
       </div>
     );
   };
@@ -456,7 +509,7 @@ export default function SalespersonDashboard() {
   };
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-screen font-sans">
       {/* Top Navigation Bar */}
       <TopBar userName={userName} />
 
@@ -470,8 +523,11 @@ export default function SalespersonDashboard() {
             {/* Header Section */}
             <div className="flex justify-between items-start mb-6">
               <div>
-                <h1 className="text-3xl font-bold mb-2 text-red-600">Commission Tracking</h1>
-                <p className="text-gray-600">Welcome, {userName.split('@')[0]}!</p>
+                <h1 className="text-3xl font-bold mb-2 text-red-600">COMMISSION TRACKING</h1>
+                <p className="text-gray-600 mb-2">
+                  {new Date(selectedMonth).toLocaleString('default', { month: 'long', year: 'numeric' })}
+                </p>
+                <p className="text-gray-600">Welcome, {userName.split('@')[0].toUpperCase()}!</p>
               </div>
               <div className="text-right">
                 <Image
@@ -486,26 +542,48 @@ export default function SalespersonDashboard() {
             <hr className="border-t border-gray-300 my-6" />
 
             {/* Statistics Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div className="grid grid-cols-6 gap-4 mb-8">
               {renderStatCard(
-                `$${formatNumber(currentStats.totalSales)}`,
+                currentStats.totalSales,
                 'Total Sales',
-                percentageChange.totalSalesChange
+                percentageChange.totalSalesChange,
+                false,
+                'bg-blue-50'  // Lighter blue
               )}
               {renderStatCard(
-                `$${formatNumber(currentStats.totalCommission)}`,
+                currentStats.totalCommission,
                 'Total Commission',
-                percentageChange.totalCommissionChange
+                percentageChange.totalCommissionChange,
+                false,
+                'bg-blue-50'  // Lighter blue
               )}
               {renderStatCard(
                 currentStats.numberOfSales,
                 'Number of Sales',
-                percentageChange.numberOfSalesChange
+                percentageChange.numberOfSalesChange,
+                true,
+                'bg-green-50'  // Lighter green
               )}
               {renderStatCard(
                 currentStats.sharedSales,
                 'Shared Sales',
-                percentageChange.sharedSalesChange
+                percentageChange.sharedSalesChange,
+                true,
+                'bg-green-50'  // Lighter green
+              )}
+              {renderStatCard(
+                currentStats.newCarSales,
+                'New Car Sales',
+                currentStats.newCarSales - previousStats.newCarSales,
+                true,
+                'bg-orange-50'  // Lighter orange
+              )}
+              {renderStatCard(
+                currentStats.usedCarSales,
+                'Used Car Sales',
+                currentStats.usedCarSales - previousStats.usedCarSales,
+                true,
+                'bg-orange-50'  // Lighter orange
               )}
             </div>
 
@@ -546,16 +624,16 @@ export default function SalespersonDashboard() {
                   <tr className="bg-gray-100">
                     <th className="px-4 py-2 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Date</th>
                     <th className="px-4 py-2 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Stock #</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Customer</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Vehicle</th>
                     <th className="px-4 py-2 text-right text-xs font-medium text-gray-600 uppercase tracking-wider">Price</th>
                     <th className="px-4 py-2 text-right text-xs font-medium text-gray-600 uppercase tracking-wider">Accessory</th>
                     <th className="px-4 py-2 text-right text-xs font-medium text-gray-600 uppercase tracking-wider">Warranty</th>
                     <th className="px-4 py-2 text-right text-xs font-medium text-gray-600 uppercase tracking-wider">Maint.</th>
                     <th className="px-4 py-2 text-right text-xs font-medium text-gray-600 uppercase tracking-wider">Trade-In</th>
                     <th className="px-4 py-2 text-right text-xs font-medium text-gray-600 uppercase tracking-wider">Bonus</th>
-                    <th className="px-4 py-2 text-right text-xs font-medium text-gray-600 uppercase tracking-wider bg-gray-200">COMMISSION</th>
+                    <th className="px-4 py-2 text-right text-xs font-medium text-gray-600 uppercase tracking-wider">COMMISSION</th>
                     <th className="px-4 py-2 text-center text-xs font-medium text-gray-600 uppercase tracking-wider">Shared</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Customer</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Vehicle</th>
                     <th className="px-4 py-2 text-center text-xs font-medium text-gray-600 uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
@@ -563,39 +641,26 @@ export default function SalespersonDashboard() {
                   {sales.length > 0 ? (
                     sales.map((sale) => (
                       <tr key={sale.id} className="border-b">
-                        {/* Date */}
                         <td className="px-4 py-2 text-sm">
                           {sale.date ? new Date(sale.date).toLocaleDateString() : 'Invalid Date'}
                         </td>
-                        {/* Stock Number */}
                         <td className="px-4 py-2 text-sm">{sale.stock_number}</td>
-                        {/* Sale Price */}
-                        <td className="px-4 py-2 text-sm text-right">${formatNumber(sale.sale_price)}</td>
-                        {/* Accessory Price */}
-                        <td className="px-4 py-2 text-sm text-right">${formatNumber(sale.accessory_price)}</td>
-                        {/* Warranty Price */}
-                        <td className="px-4 py-2 text-sm text-right">${formatNumber(sale.warranty_price)}</td>
-                        {/* Maintenance Price */}
-                        <td className="px-4 py-2 text-sm text-right">${formatNumber(sale.maintenance_price)}</td>
-                        {/* Trade-In */}
-                        <td className="px-4 py-2 text-sm text-right">${formatNumber(sale.trade_in)}</td>
-                        {/* Bonus */}
-                        <td className="px-4 py-2 text-sm text-right">${formatNumber(sale.bonus)}</td>
-                        {/* Commission */}
-                        <td className="px-4 py-2 text-sm font-bold bg-gray-200 text-right">
-                          ${formatNumber(calculateSaleCommission(sale))}
-                        </td>
-                        {/* Shared */}
-                        <td className="px-4 py-2 text-sm text-center">{sale.shared ? 'Yes' : 'No'}</td>
-                        {/* Customer */}
                         <td className="px-4 py-2 text-sm">
                           {sale.first_name && sale.last_name ? `${sale.first_name} ${sale.last_name}` : 'N/A'}
                         </td>
-                        {/* Vehicle */}
                         <td className="px-4 py-2 text-sm">
                           {sale.make && sale.model && sale.year ? `${sale.make} ${sale.model} (${sale.year})` : 'N/A'}
                         </td>
-                        {/* Actions */}
+                        <td className="px-4 py-2 text-sm text-right">${formatNumber(sale.sale_price)}</td>
+                        <td className="px-4 py-2 text-sm text-right">${formatNumber(sale.accessory_price)}</td>
+                        <td className="px-4 py-2 text-sm text-right">${formatNumber(sale.warranty_price)}</td>
+                        <td className="px-4 py-2 text-sm text-right">${formatNumber(sale.maintenance_price)}</td>
+                        <td className="px-4 py-2 text-sm text-right">${formatNumber(sale.trade_in)}</td>
+                        <td className="px-4 py-2 text-sm text-right">${formatNumber(sale.bonus)}</td>
+                        <td className="px-4 py-2 text-sm font-bold text-right bg-gray-200">
+                          ${formatNumber(calculateSaleCommission(sale))}
+                        </td>
+                        <td className="px-4 py-2 text-sm text-center">{sale.shared ? 'Yes' : 'No'}</td>
                         <td className="px-4 py-2 text-sm text-center">
                           <button
                             onClick={() => handleEditSale(sale)}
