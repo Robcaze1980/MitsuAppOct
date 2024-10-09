@@ -63,5 +63,18 @@ export type Salesperson = {
   email: string;
 };
 
+export type Database = {
+  // Define your database schema here
+  public: {
+    Tables: {
+      sales: {
+        Row: Sale;
+        // Add other table definitions as needed
+      };
+      // Add other tables as needed
+    };
+  };
+};
+
 // Optional: Define Database type if necessary
 // export type { Database } from '@supabase/auth-helpers-nextjs'

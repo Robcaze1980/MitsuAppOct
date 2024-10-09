@@ -3,6 +3,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+// Remove this line if Database is not defined
+// import type { Database } from '@/types/supabase';
 import { calculateCommission } from '@/lib/commissionCalculations';
 import { Sale, Salesperson } from '@/types/supabase';
 
