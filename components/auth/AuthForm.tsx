@@ -4,9 +4,6 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-// Remove the Database import
-// import { Database } from '@/types/supabase';
-
 interface AuthFormProps {
   isSignUp: boolean;
 }
