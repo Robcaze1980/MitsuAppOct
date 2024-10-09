@@ -1,18 +1,9 @@
 // types/supabase.ts
 
-export type Database = {
-  // Define your database schema here
-  // For example:
-  public: {
-    Tables: {
-      sales: {
-        Row: Sale;
-        // Add other table definitions as needed
-      };
-      // Add other tables as needed
-    };
-  };
-};
+// Remove or comment out the Database type if it's not being used
+// export type Database = {
+//   // ...
+// };
 
 export type Customer = {
   id: string;
@@ -76,3 +67,6 @@ export type Salesperson = {
   name: string;
   email: string;
 };
+
+// Add this line at the end of the file
+export type { Database } from '@supabase/auth-helpers-nextjs'
