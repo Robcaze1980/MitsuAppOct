@@ -46,8 +46,8 @@ export interface Sale {
   ethnicity: string;
   monthly_income: number;
   tin_ssn: boolean;
-  make: string;
-  model: string;
+  make: string; // Ensure this is included
+  model: string; // Ensure this is included
   year: number;
   vin: string;
 }
