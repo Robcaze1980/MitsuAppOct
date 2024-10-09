@@ -1,5 +1,19 @@
 // types/supabase.ts
 
+export type Database = {
+  // Define your database schema here
+  // For example:
+  public: {
+    Tables: {
+      sales: {
+        Row: Sale;
+        // Add other table definitions as needed
+      };
+      // Add other tables as needed
+    };
+  };
+};
+
 export type Customer = {
   id: string;
   first_name: string;
