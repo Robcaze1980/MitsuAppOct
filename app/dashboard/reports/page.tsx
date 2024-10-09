@@ -2,7 +2,11 @@ import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 import ClientReportTable from '../../../components/dashboard/ClientReportTable'
 import SalesChart from '@/components/charts/SalesChart'
-import { Sale } from '../../../types'
+import { Sale } from '../../../types/supabase';
+
+type SaleWithCustomer = Sale & {
+  customer: any; // Define the customer type as needed
+};
 
 export default async function Reports() {
   const supabase = createServerComponentClient({ cookies })
@@ -36,7 +40,7 @@ export default async function Reports() {
         <SalesChart data={salesReport} title="Vehicle Popularity" />
         <div className="bg-white p-4 rounded-lg shadow">
           <h2 className="text-xl font-semibold mb-2">Sales Table</h2>
-          <ClientReportTable data={salesReport as Sale[]} />
+          <ClientReportTable data={salesReport as SaleWithCustomer[]} />
         </div>
       </div>
     )
