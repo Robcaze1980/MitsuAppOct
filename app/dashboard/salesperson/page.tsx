@@ -71,6 +71,9 @@ export default function SalespersonDashboard() {
     usedCarSalesChange: 0, // Initialize
   });
 
+  // Add this new state for storing shared salesperson names
+  const [sharedSalespersonNames, setSharedSalespersonNames] = useState<{[key: string]: string}>({});
+
   /**
    * Fetches user data, sales statistics, and sales data for the selected month.
    */
@@ -78,6 +81,7 @@ export default function SalespersonDashboard() {
     fetchUserData();
     fetchStats();
     fetchSalesDataForMonth(selectedMonth);
+    setError(null); // Clear error when month changes
   }, [selectedMonth]);
 
   /**
@@ -243,7 +247,7 @@ export default function SalespersonDashboard() {
     try {
       const { data, error } = await supabase
         .from('sales')
-        .select('*') // Fetch all fields, including duplicated customer and vehicle fields
+        .select('*, shared_with_salesperson:salespeople!shared_with_salesperson_id(name)')
         .gte('date', startDate)
         .lt('date', endDate)
         .order('date', { ascending: false });
@@ -255,6 +259,16 @@ export default function SalespersonDashboard() {
       }
 
       setSales(data as Sale[]);
+      
+      // Create a map of shared salesperson names
+      const sharedNames = data.reduce((acc, sale) => {
+        if (sale.shared && sale.shared_with_salesperson) {
+          acc[sale.id] = sale.shared_with_salesperson.name;
+        }
+        return acc;
+      }, {} as {[key: string]: string});
+      setSharedSalespersonNames(sharedNames);
+
       console.log('Fetched Sales Data:', data);
     } catch (error) {
       console.error('Unexpected error fetching sales data:', error);
@@ -400,22 +414,20 @@ export default function SalespersonDashboard() {
     title: string,
     change: number,
     isUnitComparison: boolean = false,
-    bgColor: string = 'bg-white'
+    valueColor: string = 'text-gray-900'
   ) => {
     console.log(`Rendering stat card for ${title}:`, value);
     const isIncrease = change >= 0;
-    const changeText = isUnitComparison
-      ? `${Math.abs(Math.round(change))} ${isIncrease ? 'more' : 'less'} unit${Math.abs(Math.round(change)) !== 1 ? 's' : ''}`
-      : `${Math.abs(change).toFixed(2)}%`;
+    const changeText = `${Math.abs(change).toFixed(2)}%`;
     const formattedValue = typeof value === 'number' 
-      ? isUnitComparison 
+      ? isUnitComparison || title === 'Number of Sales' || title === 'Shared Sales'
         ? Math.round(value).toString()
         : `$${formatNumber(value)}`
       : value;
     return (
-      <div className={`p-4 rounded-lg shadow-md flex flex-col ${bgColor}`}>
-        <h3 className="text-lg font-semibold text-gray-700 mb-2">{title}</h3>
-        <p className="text-2xl font-bold text-gray-900">
+      <div className="p-4 rounded-lg shadow-md flex flex-col bg-white">
+        <h3 className="text-lg font-semibold mb-2 text-gray-700">{title}</h3>
+        <p className={`text-2xl font-bold ${valueColor}`}>
           {formattedValue}
         </p>
         <div className="text-sm mt-1 flex items-center justify-start w-full">
@@ -425,7 +437,7 @@ export default function SalespersonDashboard() {
             <FaCaretDown className="mr-1 text-red-500" size={28} />
           )}
           <span className="text-gray-500">
-            {changeText} {isUnitComparison ? '' : 'this month'}
+            {changeText} this month
           </span>
         </div>
       </div>
@@ -548,42 +560,42 @@ export default function SalespersonDashboard() {
                 'Total Sales',
                 percentageChange.totalSalesChange,
                 false,
-                'bg-blue-50'  // Lighter blue
+                'text-blue-600'
               )}
               {renderStatCard(
                 currentStats.totalCommission,
                 'Total Commission',
                 percentageChange.totalCommissionChange,
                 false,
-                'bg-blue-50'  // Lighter blue
+                'text-blue-600'
               )}
               {renderStatCard(
                 currentStats.numberOfSales,
                 'Number of Sales',
                 percentageChange.numberOfSalesChange,
-                true,
-                'bg-green-50'  // Lighter green
+                false,
+                'text-purple-600'
               )}
               {renderStatCard(
                 currentStats.sharedSales,
                 'Shared Sales',
                 percentageChange.sharedSalesChange,
-                true,
-                'bg-green-50'  // Lighter green
+                false,
+                'text-purple-600'
               )}
               {renderStatCard(
                 currentStats.newCarSales,
                 'New Car Sales',
-                currentStats.newCarSales - previousStats.newCarSales,
+                percentageChange.newCarSalesChange,
                 true,
-                'bg-orange-50'  // Lighter orange
+                'text-orange-600'  // Changed from red to orange
               )}
               {renderStatCard(
                 currentStats.usedCarSales,
                 'Used Car Sales',
-                currentStats.usedCarSales - previousStats.usedCarSales,
+                percentageChange.usedCarSalesChange,
                 true,
-                'bg-orange-50'  // Lighter orange
+                'text-orange-600'  // Changed from red to orange
               )}
             </div>
 
@@ -594,7 +606,7 @@ export default function SalespersonDashboard() {
                 onClick={() => {
                   setShowSaleForm(true);
                   setEditingSale(null);
-                  setError(null); // Clear any previous errors
+                  setError(null);
                 }}
                 className="bg-red-500 hover:bg-red-700 text-white px-6 py-2 rounded-md text-sm font-semibold transition duration-300 ease-in-out"
               >
@@ -660,7 +672,9 @@ export default function SalespersonDashboard() {
                         <td className="px-4 py-2 text-sm font-bold text-right bg-gray-200">
                           ${formatNumber(calculateSaleCommission(sale))}
                         </td>
-                        <td className="px-4 py-2 text-sm text-center">{sale.shared ? 'Yes' : 'No'}</td>
+                        <td className="px-4 py-2 text-sm text-center">
+                          {sale.shared ? `Yes${sharedSalespersonNames[sale.id] ? ` (${sharedSalespersonNames[sale.id]})` : ''}` : 'No'}
+                        </td>
                         <td className="px-4 py-2 text-sm text-center">
                           <button
                             onClick={() => handleEditSale(sale)}
