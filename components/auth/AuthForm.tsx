@@ -4,6 +4,9 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+// Remove this line completely:
+// import { Database } from '@/types/supabase';
+
 interface AuthFormProps {
   isSignUp: boolean;
 }
@@ -16,7 +19,7 @@ export function AuthForm({ isSignUp }: AuthFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const router = useRouter();
-  const supabase = createClientComponentClient();
+  const supabase = createClientComponentClient<{ auth: { users: any } }>();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

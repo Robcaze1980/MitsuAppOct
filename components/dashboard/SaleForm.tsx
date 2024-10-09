@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import type { Database } from '@/types/supabase';
+// Remove or comment out the Database import if it's not being used
+// import type { Database } from '@/types/supabase';
 import type { Sale } from '@/types';
 import type { Salesperson } from '@/types/salesperson';
 

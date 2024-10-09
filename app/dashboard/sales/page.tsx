@@ -1,6 +1,6 @@
 'use client';
 
-import SaleForm from '@/components/SaleForm';
+import SaleForm from '@/components/SaleForm'; // This should work if SaleForm is exported correctly
 import { Sale } from '@/types/supabase';
 
 export default function SalesPage() {
