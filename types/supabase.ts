@@ -1,9 +1,4 @@
-// types/supabase.ts
-
-// Remove or comment out the Database type if it's not being used
-// export type Database = {
-//   // ...
-// };
+// supabase.ts
 
 export type Customer = {
   id: string;
@@ -13,7 +8,7 @@ export type Customer = {
   gender: string;
   ethnicity: string;
   monthly_income: number;
-  tin_ssn: boolean; // Change this to boolean
+  tin_ssn: boolean;
 };
 
 export type Vehicle = {
@@ -29,7 +24,7 @@ export interface Sale {
   id: string;
   date: string;
   stock_number: string;
-  salesperson_id: string | null;  // Changed to allow null
+  salesperson_id: string | null;
   sale_price: number;
   accessory_price: number;
   warranty_price: number;
@@ -38,10 +33,10 @@ export interface Sale {
   bonus: number;
   trade_in: number;
   shared: boolean;
-  shared_with_salesperson_id: string | null;  // Changed to allow null
-  customer_id: string | null;  // Changed to allow null
-  vehicle_id: string | null;  // Changed to allow null
-  type: 'New' | 'Used';  // Changed to specific string literal type
+  shared_with_salesperson_id: string | null;
+  customer_id: string | null;
+  vehicle_id: string | null;
+  type: 'New' | 'Used';
   maintenance_cost: number;
   accessory_cost: number;
   first_name: string;
@@ -68,5 +63,10 @@ export type Salesperson = {
   email: string;
 };
 
-// Add this line at the end of the file
-export type { Database } from '@supabase/auth-helpers-nextjs'
+// Optional: Define Database type if necessary
+export type Database = {
+  customers: Customer[];
+  vehicles: Vehicle[];
+  sales: Sale[];
+  salespeople: Salesperson[];
+};
