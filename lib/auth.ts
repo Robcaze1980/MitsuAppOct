@@ -9,7 +9,7 @@ import { getServerSession } from "next-auth/next";
 // Extend the built-in session type
 declare module "next-auth" {
   interface Session {
-    user: {
+    user?: {
       id: string;
       email: string;
       name?: string | null;
@@ -64,9 +64,15 @@ export const authOptions: NextAuthOptions = {
       return token;
     },
     async session({ session, token }: { session: Session; token: JWT }) {
-      if (token && session.user) {
-        session.user.id = token.id as string;
-        session.user.email = token.email as string;
+      if (token && typeof session.user === 'object') {
+        return {
+          ...session,
+          user: {
+            ...session.user,
+            id: token.id as string,
+            email: token.email as string,
+          }
+        };
       }
       return session;
     },
