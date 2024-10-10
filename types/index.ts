@@ -1,7 +1,11 @@
 // types/index.ts
 
-export * from './supabase';    // Exportamos todos los tipos desde supabase.ts, incluido SalespersonSupabase
-export * from './salesperson'; // Exportamos el tipo Salesperson de salesperson.ts
+// Re-export everything from supabase
+export * from './supabase';
+
+// Re-export from salesperson, but rename the conflicting type
+import type { Salesperson as SalespersonOriginal } from './salesperson';
+export type { SalespersonOriginal };
 
 // Exportar interfaces adicionales
 export interface User {
