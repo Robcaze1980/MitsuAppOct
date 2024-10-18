@@ -27,21 +27,23 @@ export function AuthForm({ isSignUp }: AuthFormProps) {
     setSuccess(null);
 
     if (isSignUp) {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            username,
-            role, // Include the selected role
+      try {
+        const response = await fetch('/api/signup-request', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
           },
-        },
-      });
+          body: JSON.stringify({ email, username, role }),
+        });
 
-      if (error) {
-        setError(error.message);
-      } else {
-        setSuccess('Sign up successful! Please check your email to verify your account.');
+        if (response.ok) {
+          setSuccess('Sign-up request submitted successfully. An admin will review your request.');
+        } else {
+          const data = await response.json();
+          setError(data.error || 'An error occurred while submitting the sign-up request.');
+        }
+      } catch (error) {
+        setError('An error occurred while submitting the sign-up request.');
       }
     } else {
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -94,22 +96,7 @@ export function AuthForm({ isSignUp }: AuthFormProps) {
                   required
                 />
               </div>
-              <div className="mb-4">
-                <label htmlFor="role" className="block text-sm font-medium text-gray-700">
-                  Role
-                </label>
-                <select
-                  id="role"
-                  value={role}
-                  onChange={(e) => setRole(e.target.value)}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                  required
-                >
-                  <option value="salesperson">Salesperson</option>
-                  <option value="manager">Manager</option>
-                  <option value="admin">Admin</option>
-                </select>
-              </div>
+              <input type="hidden" name="role" value="salesperson" />
             </>
           )}
           <div className="mb-4">

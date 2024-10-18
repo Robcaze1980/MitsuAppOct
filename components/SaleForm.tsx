@@ -34,6 +34,7 @@ const SaleForm: React.FC<SaleFormProps> = ({ onSubmit, onSaleAdded, onClose, ini
       trade_in: 0,
       shared: false,
       shared_with_salesperson_id: null,
+      shared_with_email: null,
       customer_id: null,
       vehicle_id: null,
       type: 'New',
@@ -48,6 +49,7 @@ const SaleForm: React.FC<SaleFormProps> = ({ onSubmit, onSaleAdded, onClose, ini
       model: '',
       year: 0,
       vin: '',
+      auth_users_id: null,
     };
   });
 

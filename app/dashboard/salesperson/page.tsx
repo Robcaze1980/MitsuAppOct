@@ -516,7 +516,8 @@ export default function SalespersonDashboard() {
       ...sale,
       customer_id: sale.customer_id || undefined,
       salesperson_id: sale.salesperson_id || undefined,
-      vehicle_id: sale.vehicle_id || undefined
+      vehicle_id: sale.vehicle_id || undefined,
+      auth_users_id: sale.auth_users_id || undefined
     });
   };
 

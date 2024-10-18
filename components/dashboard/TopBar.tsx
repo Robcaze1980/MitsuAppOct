@@ -1,19 +1,34 @@
 import React from 'react';
+import { useRouter } from 'next/navigation';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 
-type TopBarProps = {
+interface TopBarProps {
   userName: string;
-};
+}
 
-export default function TopBar({ userName }: TopBarProps) {
-  const displayName = userName.split('@')[0];
+const TopBar: React.FC<TopBarProps> = ({ userName }) => {
+  const router = useRouter();
+  const supabase = createClientComponentClient();
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push('/auth/signin'); // Adjust this path to your sign-in page
+  };
 
   return (
-    <header className="bg-black text-white p-4">
-      <div className="flex justify-end items-center">
-        <div>
-          Welcome, {displayName}
-        </div>
+    <div className="bg-red-600 text-white p-4 flex justify-between items-center">
+      <span className="font-bold">{userName}</span>
+      <div>
+        <span className="mr-4">Welcome, {userName}</span>
+        <button
+          onClick={handleLogout}
+          className="bg-white text-red-600 px-4 py-2 rounded hover:bg-red-100 transition-colors"
+        >
+          Logout
+        </button>
       </div>
-    </header>
+    </div>
   );
-}
+};
+
+export default TopBar;
